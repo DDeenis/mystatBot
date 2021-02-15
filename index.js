@@ -30,11 +30,15 @@ const botToken = process.env.MYSTAT_BOT_TOKEN;
 
 const bot = new Telegraf(botToken);
 
-async function getUserData(chatId)
-{
+async function getUserData(chatId) {
     const users = await repository.getUserByChat(chatId);
 
     const userData = users[0];
+
+    if(userData == undefined)
+    {
+        return undefined;
+    }
 
     return {
         username: userData.mystatLogin,
@@ -44,7 +48,6 @@ async function getUserData(chatId)
 
 let username = '';
 let password = '';
-let name = '';
 let currentResponseText = '';
 
 let profile;
@@ -77,7 +80,10 @@ const loginScene = new WizardScene(
 
             // await mystat.setLoginParameters(username, password);
 
-            profile = await mystat.loadProfileInfo({username, password});
+            profile = await mystat.loadProfileInfo({
+                username,
+                password
+            });
 
             await repository.createUser(username, password, ctx.chat.id);
 
@@ -124,6 +130,11 @@ mainMenuTemplate.interact('📅 Посмотреть расписание на �
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
+        if (userData == undefined) {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
+
         let todaySchedule;
 
         try {
@@ -165,6 +176,11 @@ mainMenuTemplate.interact('🗓 Посмотреть расписание на �
     do: async (ctx) => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
+
+        if (userData == undefined) {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
 
         let monthSchedule;
 
@@ -238,6 +254,11 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
 
+                if (userData == undefined) {
+                    loginMiddleware.replyToContext(ctx);
+                    return false;
+                }
+
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 3);
                 } catch (error) {
@@ -280,6 +301,11 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
         homeworkSelectTemplate.interact('📩 Проверенные', 'show checked homeworks', {
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
+
+                if (userData == undefined) {
+                    loginMiddleware.replyToContext(ctx);
+                    return false;
+                }
 
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 1);
@@ -334,6 +360,11 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
 
+                if (userData == undefined) {
+                    loginMiddleware.replyToContext(ctx);
+                    return false;
+                }
+
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 2);
                 } catch (error) {
@@ -376,6 +407,11 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
         homeworkSelectTemplate.interact('🗑 Просроченные', 'show overdue homeworks', {
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
+
+                if (userData == undefined) {
+                    loginMiddleware.replyToContext(ctx);
+                    return false;
+                }
 
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 0);
@@ -440,6 +476,12 @@ mainMenuTemplate.interact('🕯 Посмотреть назначенные эк
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
+        if(userData == undefined)
+        {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
+
         let futureExams;
 
         try {
@@ -476,6 +518,12 @@ mainMenuTemplate.interact('⚰️ Посмотреть все экзамены',
     do: async (ctx) => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
+
+        if(userData == undefined)
+        {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
 
         let allExams;
 
@@ -526,6 +574,12 @@ mainMenuTemplate.interact('📄 Посмотреть новости', 'news', {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
+        if(userData == undefined)
+        {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
+
         let news;
 
         try {
@@ -575,6 +629,12 @@ mainMenuTemplate.interact('⛏ Посмотреть список группы', 
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
+        if(userData == undefined)
+        {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
+
         let groupList;
 
         try {
@@ -622,6 +682,12 @@ mainMenuTemplate.interact('🖨 Посмотреть информацию о с�
     do: async ctx => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
+
+        if(userData == undefined)
+        {
+            loginMiddleware.replyToContext(ctx);
+            return false;
+        }
 
         let settings;
 
@@ -725,6 +791,19 @@ universalMenuTemplate.navigate('⬅️ В меню', '/main-menu/');
 const universalMenuMiddleware = new MenuMiddleware('/universal-menu/', universalMenuTemplate);
 
 async function replyWithUniversalMenu(ctx, content) {
+    try {
+        await deleteMenuFromContext(ctx);
+        // await editMenuOnContext(universalMenuTemplate, ctx, '/universal-menu/');
+    } catch (error) {
+        console.log(error);
+    }
+
+    currentResponseText = content;
+
+    universalMenuMiddleware.replyToContext(ctx);
+}
+
+async function replyWithUniversalMenu(ctx, content, additionalButton) {
     try {
         await deleteMenuFromContext(ctx);
         // await editMenuOnContext(universalMenuTemplate, ctx, '/universal-menu/');
