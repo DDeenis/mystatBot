@@ -229,7 +229,7 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
         }
 
         function getActionString(element) {
-            return `show homework ${element.creation_time}`;
+            return `show homework ${element.creation_time + Math.random() * 1000}`;
         }
 
         const homeworkSelectTemplate = new MenuTemplate(ctx => 'Выберите тип домашнего задания');
