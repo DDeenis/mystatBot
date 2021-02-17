@@ -26,6 +26,16 @@ async function getScheduleByDate(userData, date = new Date()) {
   return await getResponseParametrized(link, parameter, userData, 200, date);
 }
 
+async function getScheduleByDateTomorrow(userData, date = new Date()) {
+  const link = `https://msapi.itstep.org/api/v2/schedule/operations/get-by-date?date_filter=${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate() + 1}`;
+
+  const referrerLink = "https://mystat.itstep.org/ru/main/schedule/page/index";
+
+  const parameter = await createFetchParameter(referrerLink, userData);
+
+  return await getResponseParametrized(link, parameter, userData, 200, date);
+}
+
 async function getReviews(userData) {
   const link = "https://msapi.itstep.org/api/v2/reviews/index/list";
 
@@ -272,6 +282,7 @@ module.exports = {
   getNewsDetails,
   getReviews,
   getScheduleByDate,
+  getScheduleByDateTomorrow,
   getStreamLeaders,
   getUserSettings,
   loadProfileInfo
