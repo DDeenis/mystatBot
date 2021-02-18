@@ -30,15 +30,11 @@ const botToken = process.env.MYSTAT_BOT_TOKEN;
 
 const bot = new Telegraf(botToken);
 
-async function getUserData(chatId) {
+async function getUserData(chatId)
+{
     const users = await repository.getUserByChat(chatId);
 
     const userData = users[0];
-
-    if(userData == undefined)
-    {
-        return undefined;
-    }
 
     return {
         username: userData.mystatLogin,
@@ -48,6 +44,7 @@ async function getUserData(chatId) {
 
 let username = '';
 let password = '';
+let name = '';
 let currentResponseText = '';
 
 let profile;
@@ -80,10 +77,7 @@ const loginScene = new WizardScene(
 
             // await mystat.setLoginParameters(username, password);
 
-            profile = await mystat.loadProfileInfo({
-                username,
-                password
-            });
+            profile = await mystat.loadProfileInfo({username, password});
 
             await repository.createUser(username, password, ctx.chat.id);
 
@@ -130,11 +124,6 @@ mainMenuTemplate.interact('📅 Посмотреть расписание на �
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
-        if (userData == undefined) {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
-
         let todaySchedule;
 
         try {
@@ -156,12 +145,50 @@ mainMenuTemplate.interact('📅 Посмотреть расписание на �
         let scheduleFormatted = 'Расписание на сегодня:\n\n';
 
         for (const scheduleEntry of todaySchedule) {
-            scheduleFormatted += `✏️ Название предмета: ${scheduleEntry.subject_name}\n`;
+            scheduleFormatted += `✏️ Предмет: ${scheduleEntry.subject_name}\n`;
             scheduleFormatted += `💡 Преподаватель: ${scheduleEntry.teacher_name}\n`;
             scheduleFormatted += `🗝 Аудитория: ${scheduleEntry.room_name}\n`;
-            scheduleFormatted += `⏰ Начало: ${scheduleEntry.started_at}\n`;
-            scheduleFormatted += `🎉 Конец: ${scheduleEntry.finished_at}\n`;
-            scheduleFormatted += `🧰 Пара: ${scheduleEntry.lesson}\n`;
+            scheduleFormatted += `⏰ Время: ${scheduleEntry.started_at} \- ${scheduleEntry.finished_at}\n`;
+            scheduleFormatted += '\n';
+        }
+
+        await replyWithUniversalMenu(ctx, scheduleFormatted);
+
+        return false;
+    }
+});
+
+// Расписание на завтра
+mainMenuTemplate.interact('📅 Посмотреть расписание на завтра', 'tomorrowSchedule', {
+    do: async (ctx) => {
+        // await checkLoginCredentials(ctx.chat.id);
+        const userData = await getUserData(ctx.chat.id);
+
+        let tomorrowSchedule;
+
+        try {
+            tomorrowSchedule = await mystat.getScheduleByDateTomorrow(userData);
+        } catch (error) {
+            await ctx.reply('🚫 При получении расписания возникла ошибка');
+
+            console.log(error);
+
+            return false;
+        }
+
+        if (tomorrowSchedule.length <= 0) {
+            await ctx.reply('🎉 У вас сегодня нет пар');
+
+            return false;
+        }
+
+        let scheduleFormatted = 'Расписание на завтра:\n\n';
+
+        for (const scheduleEntry of tomorrowSchedule) {
+            scheduleFormatted += `✏️ Предмет: ${scheduleEntry.subject_name}\n`;
+            scheduleFormatted += `💡 Преподаватель: ${scheduleEntry.teacher_name}\n`;
+            scheduleFormatted += `🗝 Аудитория: ${scheduleEntry.room_name}\n`;
+            scheduleFormatted += `⏰ Время: ${scheduleEntry.started_at} \- ${scheduleEntry.finished_at}\n`;
             scheduleFormatted += '\n';
         }
 
@@ -176,11 +203,6 @@ mainMenuTemplate.interact('🗓 Посмотреть расписание на �
     do: async (ctx) => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
-
-        if (userData == undefined) {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
 
         let monthSchedule;
 
@@ -208,15 +230,13 @@ mainMenuTemplate.interact('🗓 Посмотреть расписание на �
 
         function getFormattedString(element) {
             let formattedString = '';
-
+            
             for (const scheduleEntry of element) {
-                formattedString += `✏️ Название предмета: ${scheduleEntry.subject_name}\n`;
-                formattedString += `💡 Преподаватель: ${scheduleEntry.teacher_name}\n`;
                 formattedString += `📅 Дата: ${scheduleEntry.date}\n`;
+                formattedString += `✏️ Предмет: ${scheduleEntry.subject_name}\n`;
+                formattedString += `💡 Преподаватель: ${scheduleEntry.teacher_name}\n`;
                 formattedString += `🗝 Аудитория: ${scheduleEntry.room_name}\n`;
-                formattedString += `⏰ Начало: ${scheduleEntry.started_at}\n`;
-                formattedString += `🎉 Конец: ${scheduleEntry.finished_at}\n`;
-                formattedString += `🧰 Пара: ${scheduleEntry.lesson}\n`;
+                formattedString += `⏰ Время: ${scheduleEntry.started_at} \- ${scheduleEntry.finished_at}\n`;
                 formattedString += '\n';
             }
 
@@ -254,11 +274,6 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
 
-                if (userData == undefined) {
-                    loginMiddleware.replyToContext(ctx);
-                    return false;
-                }
-
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 3);
                 } catch (error) {
@@ -278,7 +293,7 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
                 function getFormattedString(element) {
                     let formattedString = '';
 
-                    formattedString += `✏️ Название предмета: ${element.name_spec}\n`;
+                    formattedString += `✏️ Предмет: ${element.name_spec}\n`;
                     formattedString += `📖 Тема: ${element.theme}\n`;
                     formattedString += `💡 Преподаватель: ${element.fio_teach}\n`;
                     formattedString += `📅 Дата выдачи: ${element.creation_time}\n`;
@@ -302,11 +317,6 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
 
-                if (userData == undefined) {
-                    loginMiddleware.replyToContext(ctx);
-                    return false;
-                }
-
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 1);
                 } catch (error) {
@@ -326,7 +336,7 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
                 function getFormattedString(element) {
                     let formattedString = '';
 
-                    formattedString += `✏️ Название предмета: ${element.name_spec}\n`;
+                    formattedString += `✏️ Предмет: ${element.name_spec}\n`;
                     formattedString += `📖 Тема: ${element.theme}\n`;
                     formattedString += `💡 Преподаватель: ${element.fio_teach}\n`;
                     formattedString += `📅 Дата выдачи: ${element.creation_time}\n`;
@@ -360,11 +370,6 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
 
-                if (userData == undefined) {
-                    loginMiddleware.replyToContext(ctx);
-                    return false;
-                }
-
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 2);
                 } catch (error) {
@@ -384,7 +389,7 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
                 function getFormattedString(element) {
                     let formattedString = '';
 
-                    formattedString += `✏️ Название предмета: ${element.name_spec}\n`;
+                    formattedString += `✏️ Предмет: ${element.name_spec}\n`;
                     formattedString += `📖 Тема: ${element.theme}\n`;
                     formattedString += `💡 Преподаватель: ${element.fio_teach}\n`;
                     formattedString += `📅 Дата выдачи: ${element.creation_time}\n`;
@@ -408,11 +413,6 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
             do: async ctx => {
                 const userData = await getUserData(ctx.chat.id);
 
-                if (userData == undefined) {
-                    loginMiddleware.replyToContext(ctx);
-                    return false;
-                }
-
                 try {
                     homeworkList = await mystat.getHomeworkList(userData, 0);
                 } catch (error) {
@@ -432,7 +432,7 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
                 function getFormattedString(element) {
                     let formattedString = '';
 
-                    formattedString += `✏️ Название предмета: ${element.name_spec}\n`;
+                    formattedString += `✏️ Предмет: ${element.name_spec}\n`;
                     formattedString += `📖 Тема: ${element.theme}\n`;
                     formattedString += `💡 Преподаватель: ${element.fio_teach}\n`;
                     formattedString += `📅 Дата выдачи: ${element.creation_time}\n`;
@@ -476,12 +476,6 @@ mainMenuTemplate.interact('🕯 Посмотреть назначенные эк
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
-        if(userData == undefined)
-        {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
-
         let futureExams;
 
         try {
@@ -503,7 +497,7 @@ mainMenuTemplate.interact('🕯 Посмотреть назначенные эк
         let examsFormatted = 'Ваши экзамены\n\n';
 
         for (const exam of futureExams) {
-            examsFormatted += `✏️ Название предмета: ${exam.spec}\n`;
+            examsFormatted += `✏️ Предмет: ${exam.spec}\n`;
             examsFormatted += `⏰ Дата: ${exam.date}\n`;
             examsFormatted += '\n';
         }
@@ -518,12 +512,6 @@ mainMenuTemplate.interact('⚰️ Посмотреть все экзамены',
     do: async (ctx) => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
-
-        if(userData == undefined)
-        {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
 
         let allExams;
 
@@ -550,7 +538,7 @@ mainMenuTemplate.interact('⚰️ Посмотреть все экзамены',
         function getFormattedString(element) {
             let formattedString = '';
 
-            formattedString += `✏️ Название предмета: ${element.spec}\n`;
+            formattedString += `✏️ Предмет: ${element.spec}\n`;
             formattedString += `⏰ Дата: ${element.date}\n`;
             formattedString += `💰 Преподаватель: ${element.teacher}\n`;
             formattedString += `🕯 Оценка: ${element.mark}\n`;
@@ -573,12 +561,6 @@ mainMenuTemplate.interact('📄 Посмотреть новости', 'news', {
     do: async (ctx) => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
-
-        if(userData == undefined)
-        {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
 
         let news;
 
@@ -629,12 +611,6 @@ mainMenuTemplate.interact('⛏ Посмотреть список группы', 
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
 
-        if(userData == undefined)
-        {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
-
         let groupList;
 
         try {
@@ -682,12 +658,6 @@ mainMenuTemplate.interact('🖨 Посмотреть информацию о с�
     do: async ctx => {
         // await checkLoginCredentials(ctx.chat.id);
         const userData = await getUserData(ctx.chat.id);
-
-        if(userData == undefined)
-        {
-            loginMiddleware.replyToContext(ctx);
-            return false;
-        }
 
         let settings;
 
@@ -803,19 +773,6 @@ async function replyWithUniversalMenu(ctx, content) {
     universalMenuMiddleware.replyToContext(ctx);
 }
 
-async function replyWithUniversalMenu(ctx, content, additionalButton) {
-    try {
-        await deleteMenuFromContext(ctx);
-        // await editMenuOnContext(universalMenuTemplate, ctx, '/universal-menu/');
-    } catch (error) {
-        console.log(error);
-    }
-
-    currentResponseText = content;
-
-    universalMenuMiddleware.replyToContext(ctx);
-}
-
 /////////////////// END UNIVERSAL MENU ///////////////////
 
 const stage = new Stage([loginScene], {
@@ -840,6 +797,9 @@ bot.command('start', ctx => {
 bot.command('login', ctx => loginMiddleware.replyToContext(ctx));
 
 bot.command('menu', ctx => mainMenuMiddleware.replyToContext(ctx));
+
+const crashCommand = process.env.CRASH_COMMAND;
+bot.command(crashCommand, ctx => mainMenuMiddleware.replyToContext(42));
 
 bot.command('help', ctx => ctx.reply('Основные команды:\n\n/login - вход в аккаунт\n/menu - открыть главное меню\n/help - показать это сообщение'));
 
