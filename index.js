@@ -167,7 +167,10 @@ mainMenuTemplate.interact('📅 Посмотреть расписание на �
         let tomorrowSchedule;
 
         try {
-            tomorrowSchedule = await mystat.getScheduleByDateTomorrow(userData);
+            const tomorrowDate = new Date();
+            tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+
+            tomorrowSchedule = await mystat.getScheduleByDate(userData, tomorrowDate);
         } catch (error) {
             await ctx.reply('🚫 При получении расписания возникла ошибка');
 
@@ -177,7 +180,7 @@ mainMenuTemplate.interact('📅 Посмотреть расписание на �
         }
 
         if (tomorrowSchedule.length <= 0) {
-            await ctx.reply('🎉 У вас сегодня нет пар');
+            await ctx.reply('🎉 У вас завтра нет пар');
 
             return false;
         }
@@ -230,7 +233,7 @@ mainMenuTemplate.interact('🗓 Посмотреть расписание на �
 
         function getFormattedString(element) {
             let formattedString = '';
-            
+
             for (const scheduleEntry of element) {
                 formattedString += `📅 Дата: ${scheduleEntry.date}\n`;
                 formattedString += `✏️ Предмет: ${scheduleEntry.subject_name}\n`;
