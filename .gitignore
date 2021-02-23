@@ -1,3 +1,4 @@
 .vscode
 .jshintrc
 .git
+node_modules
