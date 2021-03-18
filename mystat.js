@@ -42,6 +42,7 @@ async function getHomeworkList(userData, homeworkStatus = 3, page = 1, type = 0)
   // 1 - checked homeworks
   // 2 - uploaded homeworks
   // 3 - active homeworks
+  // 5 - deleted by teacher homeworks
 
   // Homework type:
   // 0 - homework

@@ -1,9 +1,13 @@
+// O_O (remove comments below to get over 9000 errors)
 /* eslint-disable no-console */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-shadow */
 /* eslint-disable max-len */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-use-before-define */
+
+// imports
+
 const {
   Telegraf,
   session,
@@ -22,8 +26,9 @@ const {
 const Enumerable = require('linq');
 const mystat = require('./mystat');
 
-require('mysql2'); // mock
 const repository = require('./database');
+
+// code
 
 repository.checkDatabase();
 
