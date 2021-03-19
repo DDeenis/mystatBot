@@ -24,7 +24,7 @@ const {
 } = require('telegraf-inline-menu');
 
 const Enumerable = require('linq');
-const mystat = require('./mystat');
+const mystat = require('mystat-api');
 
 const repository = require('./database');
 
@@ -418,7 +418,7 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
       },
     });
 
-    homeworkSelectTemplate.interact('🗑 Просроченные', 'show overdue homeworks', {
+    homeworkSelectTemplate.interact('🔪 Просроченные', 'show overdue homeworks', {
       do: async (ctx) => {
         const userData = await getUserData(ctx.chat.id);
 
@@ -457,6 +457,48 @@ mainMenuTemplate.interact('✉️ Посмотреть домашние зада
         }
 
         await replyWithListedMenu(ctx, homeworkList, 'Просроченные домашние задания', '/overdue-homework/', getButtonTitle, getFormattedString, getActionString);
+
+        return false;
+      },
+    });
+
+    homeworkSelectTemplate.interact('🗑 Удаленные', 'show deleted homeworks', {
+      do: async (ctx) => {
+        const userData = await getUserData(ctx.chat.id);
+
+        try {
+          homeworkList = await mystat.getHomeworkList(userData, 5);
+        } catch (error) {
+          await ctx.reply('🚫 При получении списка домашних заданий возникла ошибка');
+
+          console.log(error);
+
+          return false;
+        }
+
+        if (homeworkList === undefined || homeworkList.length <= 0) {
+          await ctx.reply('🎉 У вас нет удаленных домашних заданий');
+
+          return false;
+        }
+
+        function getFormattedString(element) {
+          let formattedString = '';
+
+          formattedString += `✏️ Предмет: ${element.name_spec}\n`;
+          formattedString += `📖 Тема: ${element.theme}\n`;
+          formattedString += `💡 Преподаватель: ${element.fio_teach}\n`;
+          formattedString += `📅 Дата выдачи: ${element.creation_time}\n`;
+          formattedString += `❕ Сдать до: ${element.completion_time}\n`;
+          formattedString += `✒️ Комментарий: ${element.comment}\n`;
+          formattedString += `📁 Путь к файлу: ${element.file_path}\n`;
+
+          formattedString += '\n';
+
+          return formattedString;
+        }
+
+        await replyWithListedMenu(ctx, homeworkList, 'Удаленные домашние задания', '/deleted-homework/', getButtonTitle, getFormattedString, getActionString);
 
         return false;
       },

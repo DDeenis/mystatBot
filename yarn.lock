@@ -1050,6 +1050,11 @@ isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
+jquery@^3.5.1:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.6.0.tgz#c72a09f15c1bdce142f49dbf1170bdf8adac2470"
+  integrity sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==
+
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -1267,6 +1272,15 @@ mysql2@^2.2.5:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
+mystat-api@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/mystat-api/-/mystat-api-1.0.1.tgz#7de5112a4a71684e648793046c78c2af3a089817"
+  integrity sha512-IvHkViv4avl072mCvZQ2B/E9t/a8iF3I9ep/AxknVAk3tI2US9qtO/Hqp2EVFvz1eATdDhuAqi4rS3PQm/tdAg==
+  dependencies:
+    jquery "^3.5.1"
+    node-fetch "^2.6.1"
+    nodejs "^0.0.0"
+
 named-placeholders@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/named-placeholders/-/named-placeholders-1.1.2.tgz#ceb1fbff50b6b33492b5cf214ccf5e39cef3d0e8"
@@ -1284,10 +1298,15 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
-node-fetch@^2.2.0:
+node-fetch@^2.2.0, node-fetch@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
+
+nodejs@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/nodejs/-/nodejs-0.0.0.tgz#4722fa2e18ac4eb73a42ae16d01e3584a12b7531"
+  integrity sha1-RyL6LhisTrc6Qq4W0B41hKErdTE=
 
 normalize-package-data@^2.3.2:
   version "2.5.0"

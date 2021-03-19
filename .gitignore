@@ -1,5 +1,6 @@
 .vscode
 .jshintrc
 .git
+.eslintrc.json
 /node_modules
 

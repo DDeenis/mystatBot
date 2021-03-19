@@ -8,6 +8,7 @@
     "linq": "^3.2.3",
     "mssql": "^6.3.0",
     "mysql2": "^2.2.5",
+    "mystat-api": "^1.0.1",
     "sequelize": "^6.3.5",
     "tedious": "^9.2.1",
     "telegraf": "^3.38.0",
