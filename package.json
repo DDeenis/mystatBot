@@ -24,5 +24,8 @@
       "node_modules/**/*"
     ]
   },
+  "scripts": {
+    "start": "node index.js"
+  },
   "bin": "index.js"
 }
